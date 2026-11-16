@@ -1,5 +1,7 @@
 # OpnForm on Railway
 
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/new/template/opnform-1?utm_medium=integration&utm_source=button&utm_campaign=opnform)
+
 Railway template for [OpnForm](https://github.com/OpnForm/OpnForm) **2.8.4**, the open-source form builder (a self-hosted Typeform / Google Forms alternative).
 
 ## What it deploys
