@@ -3,7 +3,8 @@
 	auto_https off
 	persist_config off
 	servers {
-		# Railway's edge proxy is the only public way in; take the client IP from its X-Real-IP header.
+		# Railway's edge proxy is the only public way in, and it overwrites X-Real-IP and
+		# X-Forwarded-For with the real client address, so take the client IP from there.
 		trusted_proxies static 0.0.0.0/0 ::/0
 		client_ip_headers X-Real-IP X-Forwarded-For
 	}
@@ -12,6 +13,12 @@
 :{$PORT:8080} {
 	request_body {
 		max_size 64MB
+	}
+
+	# Railway terminates TLS at its edge; tell Laravel when the original request was HTTPS.
+	map {http.request.header.X-Forwarded-Proto} {fwd_https} {
+		https on
+		default off
 	}
 
 	# Nuxt runtime icons are served by the client.
@@ -25,8 +32,8 @@
 		root * /usr/share/nginx/html/public
 		php_fastcgi 127.0.0.1:9000 {
 			env REQUEST_URI {vars.api_uri}
-			header_up X-Forwarded-For {client_ip}
-			header_up X-Forwarded-Proto {http.request.header.X-Forwarded-Proto}
+			env REMOTE_ADDR {client_ip}
+			env HTTPS {fwd_https}
 		}
 		file_server
 	}
@@ -36,8 +43,8 @@
 	handle @laravel {
 		root * /usr/share/nginx/html/public
 		php_fastcgi 127.0.0.1:9000 {
-			header_up X-Forwarded-For {client_ip}
-			header_up X-Forwarded-Proto {http.request.header.X-Forwarded-Proto}
+			env REMOTE_ADDR {client_ip}
+			env HTTPS {fwd_https}
 		}
 		file_server
 	}
